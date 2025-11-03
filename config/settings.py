@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     
     # Local apps
     'apps.core',
+    'apps.core.contracts',
     'apps.crm',
     'apps.commerce',
     'apps.operations',

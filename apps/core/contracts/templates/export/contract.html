@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Contrato {{ contract.id }}</title>
+    <style>
+      body { font-family: Arial, sans-serif; font-size: 12px; }
+      h1 { font-size: 18px; margin-bottom: 4px; }
+      .meta { margin-bottom: 12px; }
+      .section { margin-top: 8px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #ddd; padding: 6px; }
+    </style>
+  </head>
+  <body>
+    <h1>Contrato: {{ contract.title }}</h1>
+    <div class="meta">
+      <strong>Tenant:</strong> {{ tenant.name }} ({{ tenant.subdomain }})<br />
+      <strong>Tipo:</strong> {{ contract.contract_type }}<br />
+      <strong>Estado:</strong> {{ contract.status }}<br />
+      <strong>Inicio:</strong> {{ contract.start_date }}
+      {% if contract.end_date %}
+      &nbsp;|&nbsp; <strong>Fin:</strong> {{ contract.end_date }}
+      {% endif %}
+      <br />
+      <strong>Monto:</strong> {{ contract.amount }}
+    </div>
+
+    <div class="section">
+      <strong>Cliente:</strong>
+      {% if contract.client %}
+        {{ contract.client.nombre }}
+      {% else %}
+        {{ contract.client_name|default:"N/D" }}
+      {% endif %}
+    </div>
+
+    {% if contract.details %}
+    <div class="section">
+      <strong>Detalles:</strong>
+      <p>{{ contract.details }}</p>
+    </div>
+    {% endif %}
+  </body>
+</html>
