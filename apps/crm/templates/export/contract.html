@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Contrato {{ contract.title }}</title>
+    <style>
+        @page { size: A4; margin: 2cm; }
+        body { font-family: Arial, sans-serif; font-size: 12px; line-height: 1.5; color: #222; }
+        .header { text-align: center; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid #366092; }
+        .section { margin: 16px 0; }
+        .two-col { display: flex; gap: 16px; }
+        .two-col .col { flex: 1; }
+        .label { font-weight: bold; color: #366092; }
+        .box { background: #f7f7f7; padding: 12px; border: 1px solid #e0e0e0; }
+        .footer { margin-top: 24px; font-size: 11px; color: #666; }
+        .sign { margin-top: 40px; display: flex; justify-content: space-between; }
+        .sign .line { width: 42%; border-top: 1px solid #999; text-align: center; padding-top: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Contrato de Servicios</h1>
+        <div>{{ tenant.name }}</div>
+    </div>
+
+    <div class="section two-col">
+        <div class="col box">
+            <div class="label">Contrato</div>
+            <div><strong>Título:</strong> {{ contract.title }}</div>
+            <div><strong>Tipo:</strong> {{ contract.contract_type }}</div>
+            <div><strong>Estado:</strong> {{ contract.get_status_display }}</div>
+            <div><strong>Monto:</strong> $ {{ contract.amount }}</div>
+            <div><strong>Vigencia:</strong>
+                {{ contract.start_date }}{% if contract.end_date %} — {{ contract.end_date }}{% else %} — sin fecha de término{% endif %}
+            </div>
+        </div>
+        <div class="col box">
+            <div class="label">Cliente</div>
+            <div><strong>Nombre:</strong> {{ client.nombre }}</div>
+            {% if client.email %}<div><strong>Email:</strong> {{ client.email }}</div>{% endif %}
+            {% if client.contacto %}<div><strong>Teléfono:</strong> {{ client.contacto }}</div>{% endif %}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="label">Cláusulas y condiciones</div>
+        <p>
+            Este documento certifica la relación contractual entre <strong>{{ tenant.name }}</strong> y
+            <strong>{{ client.nombre }}</strong> para la prestación de servicios descritos en el presente contrato.
+            Las partes acuerdan cumplir las obligaciones y términos aquí establecidos.
+        </p>
+        <p>
+            Cualquier modificación deberá ser aceptada por ambas partes. El presente contrato entra en vigencia
+            a partir del <strong>{{ contract.start_date }}</strong> y se mantendrá hasta la fecha de término indicada
+            {% if contract.end_date %}<strong>{{ contract.end_date }}</strong>{% else %}cuando las partes acuerden su finalización{% endif %}.
+        </p>
+    </div>
+
+    <div class="sign">
+        <div class="line">Firma Representante — {{ tenant.name }}</div>
+        <div class="line">Firma Cliente — {{ client.nombre }}</div>
+    </div>
+
+    <div class="footer">
+        Generado el {{ generated_at|date:"Y-m-d H:i" }} — Documento interno de {{ tenant.name }}.
+    </div>
+</body>
+</html>
