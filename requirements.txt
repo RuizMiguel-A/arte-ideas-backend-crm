@@ -15,8 +15,11 @@ setuptools>=68.0.0
 # Image processing
 Pillow>=10.0.0
 
-# PDF Generation (opcional)
-# weasyprint>=60.0  # Descomenta si necesitas generar PDFs
+# PDF Generation
+reportlab>=4.0.0
+
+# Excel Generation
+openpyxl>=3.1.0
 
 # Database connectors (elige uno según tu BD)
 # mysqlclient==2.2.0  # Para MySQL
