@@ -124,4 +124,9 @@ class Repuesto(models.Model):
     descripcion = models.TextField(default='')
 
     def __str__(self):
-        return f"{self.nombre} - {self.activo.nombre}"
+        return f"{self.nombre} - {self.codigo} ({self.categoria})"
+    
+    class Meta:
+        verbose_name = 'Repuesto'
+        verbose_name_plural = 'Repuestos'
+        ordering = ['nombre']

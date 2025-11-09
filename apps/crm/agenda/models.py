@@ -63,19 +63,30 @@ class Evento(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.titulo} - {self.fecha_inicio}"
+        if self.fecha_inicio:
+            return f"{self.titulo} - {self.fecha_inicio}"
+        return self.titulo
 
     @property
     def duracion_minutos(self):
+        """Calcular duración en minutos. Retorna None si las fechas no están definidas."""
+        if self.fecha_inicio is None or self.fecha_fin is None:
+            return None
         return int((self.fecha_fin - self.fecha_inicio).total_seconds() // 60)
 
     @property
     def esta_vencido(self):
+        """Verificar si el evento está vencido. Retorna False si las fechas no están definidas."""
+        if self.fecha_fin is None:
+            return False
         from django.utils import timezone
         return self.estado in ['pendiente', 'en_progreso'] and self.fecha_fin < timezone.now()
 
     @property
     def tiempo_restante(self):
+        """Calcular tiempo restante hasta el evento. Retorna None si la fecha no está definida."""
+        if self.fecha_inicio is None:
+            return None
         from django.utils import timezone
         delta = self.fecha_inicio - timezone.now()
         return delta.total_seconds()
@@ -123,10 +134,14 @@ class Cita(models.Model):
         ordering = ['evento__fecha_inicio']
 
     def __str__(self):
-        return f"Cita: {self.evento.titulo} ({self.get_estado_cita_display()})"
+        if hasattr(self, 'evento') and self.evento:
+            return f"Cita: {self.evento.titulo} ({self.get_estado_cita_display()})"
+        return f"Cita ({self.get_estado_cita_display()})"
 
     @property
     def es_cita_hoy(self):
+        if not hasattr(self, 'evento') or not self.evento or not self.evento.fecha_inicio:
+            return False
         from django.utils import timezone
         return self.evento.fecha_inicio.date() == timezone.now().date()
 
@@ -158,12 +173,14 @@ class Recordatorio(models.Model):
         ordering = ['fecha_creacion']
 
     def __str__(self):
-        return f"Recordatorio: {self.evento.titulo} -> {self.destinatario}"
+        if hasattr(self, 'evento') and self.evento:
+            return f"Recordatorio: {self.evento.titulo} -> {self.destinatario}"
+        return f"Recordatorio -> {self.destinatario}"
 
     @property
     def debe_enviarse(self):
         from django.utils import timezone
-        if self.enviado or self.evento is None:
+        if self.enviado or not hasattr(self, 'evento') or self.evento is None or self.evento.fecha_inicio is None:
             return False
         envio_programado = self.evento.fecha_inicio - timezone.timedelta(minutes=self.minutos_antes)
         return timezone.now() >= envio_programado

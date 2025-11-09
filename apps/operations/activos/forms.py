@@ -57,13 +57,10 @@ class MantenimientoForm(forms.ModelForm):
 
 
 class RepuestoForm(forms.ModelForm):
-    fecha_compra = forms.DateField(
-        input_formats=['%Y-%m-%d']
-    )
-
     class Meta:
         model = Repuesto
         fields = [
-            'nombre', 'categoria', 'ubicacion', 'proveedor', 'stock_actual', 'stock_minimo', 'costo_unitario', 'descripcion'
+            'nombre', 'categoria', 'ubicacion', 'proveedor', 'codigo',
+            'stock_actual', 'stock_minimo', 'costo_unitario', 'descripcion'
         ]
         widgets = {}

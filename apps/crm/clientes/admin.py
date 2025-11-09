@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from .models import Cliente, HistorialCliente, ContactoCliente
 
 
@@ -125,6 +126,62 @@ class ClienteAdmin(admin.ModelAdmin):
         elif hasattr(request.user, 'tenant') and request.user.tenant:
             return qs.filter(tenant=request.user.tenant)
         return qs.none()
+    
+    def get_form(self, request, obj=None, **kwargs):
+        """Personalizar formulario según el usuario"""
+        form = super().get_form(request, obj, **kwargs)
+        # Para usuarios no superusuarios, excluir el campo tenant del formulario
+        # (los superusuarios pueden verlo y seleccionarlo)
+        if not request.user.is_superuser and 'tenant' in form.base_fields:
+            del form.base_fields['tenant']
+        return form
+    
+    def get_fieldsets(self, request, obj=None):
+        """Mostrar campo tenant solo a superusuarios"""
+        fieldsets = super().get_fieldsets(request, obj)
+        
+        # Si es superusuario, agregar campo tenant al inicio
+        if request.user.is_superuser:
+            # Convertir fieldsets a lista mutable
+            fieldsets_list = []
+            for name, options in fieldsets:
+                if name == 'Información Básica':
+                    # Agregar tenant al principio de este fieldset
+                    fields = list(options.get('fields', ()))
+                    if 'tenant' not in fields:
+                        fields.insert(0, 'tenant')
+                    options = dict(options)
+                    options['fields'] = tuple(fields)
+                fieldsets_list.append((name, options))
+            return tuple(fieldsets_list)
+        
+        return fieldsets
+    
+    def save_model(self, request, obj, form, change):
+        """Asignar automáticamente el tenant del usuario"""
+        # Si no es superusuario, asignar automáticamente el tenant del usuario
+        if not request.user.is_superuser:
+            if hasattr(request.user, 'tenant') and request.user.tenant:
+                obj.tenant = request.user.tenant
+            else:
+                # Esto no debería ocurrir debido a has_add_permission, pero por seguridad
+                raise ValidationError('No se puede crear un cliente sin un estudio fotográfico asignado.')
+        # Si es superusuario y no se seleccionó tenant, intentar usar el del usuario si existe
+        elif request.user.is_superuser and not obj.tenant:
+            if hasattr(request.user, 'tenant') and request.user.tenant:
+                obj.tenant = request.user.tenant
+            # Si es superusuario sin tenant, el campo es obligatorio en el formulario
+            # Django validará esto antes de llegar aquí
+        
+        super().save_model(request, obj, form, change)
+    
+    def has_add_permission(self, request):
+        """Verificar permisos para agregar clientes"""
+        # Usuarios sin tenant no pueden crear clientes (a menos que sean superusuarios)
+        if not request.user.is_superuser:
+            if not (hasattr(request.user, 'tenant') and request.user.tenant):
+                return False
+        return super().has_add_permission(request)
     
     actions = ['activar_clientes', 'desactivar_clientes', 'exportar_clientes']
     
