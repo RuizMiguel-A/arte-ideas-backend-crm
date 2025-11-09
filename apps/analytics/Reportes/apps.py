@@ -11,9 +11,4 @@ class AnalyticsConfig(AppConfig):
     
     def ready(self):
         """Configuración cuando la app está lista"""
-        # Importar admin para que se registre
-        try:
-            from . import admin
-        except ImportError:
-            pass
-
+        pass
